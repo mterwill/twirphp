@@ -15,6 +15,7 @@ final class Context
     const STATUS_CODE = 'status_code';
     const REQUEST_HEADER = 'request_header';
     const RESPONSE_HEADER = 'response_header';
+    const ALLOW_UNKNOWN_JSON_FIELDS = 'allow_unknown_json_fields';
 
     /**
      * Extracts the name of the method being handled in the given
@@ -188,6 +189,17 @@ final class Context
 
         $ctx[self::RESPONSE_HEADER][$key] = $value;
 
+        return $ctx;
+    }
+
+    public static function unknownJsonFieldsAllowed(array $ctx): bool
+    {
+        return $ctx[self::ALLOW_UNKNOWN_JSON_FIELDS] ?? false;
+    }
+
+    public static function withUnknownJsonFieldsAllowed(array $ctx): array
+    {
+        $ctx[self::ALLOW_UNKNOWN_JSON_FIELDS] = true;
         return $ctx;
     }
 }

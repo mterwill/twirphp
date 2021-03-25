@@ -146,7 +146,7 @@ final class {{ .Service | phpServiceName .File }}Server implements RequestHandle
             $ctx = $this->hook->requestRouted($ctx);
 
             $in = new {{ $inputType }}();
-            $in->mergeFromJsonString((string)$req->getBody());
+            $in->mergeFromJsonString((string)$req->getBody(), Context::unknownJsonFieldsAllowed());
 
             $out = $this->svc->{{ $method.Name }}($ctx, $in);
 
