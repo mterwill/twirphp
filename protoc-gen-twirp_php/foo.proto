@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package foo;
+
+import "google/protobuf/empty.proto";
+import "bar.proto";
+
+service Foo {
+    rpc Bar(bar.Bar) returns (google.protobuf.Empty);
+}

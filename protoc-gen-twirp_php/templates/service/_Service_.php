@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-namespace {{ .File | phpNamespace }};
+namespace {{ .File.Desc | phpNamespace }};
 
 /**
  *{{ .Service.Comments.Leading | protoSplitComments | join "\n *" }}

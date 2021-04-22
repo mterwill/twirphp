@@ -4,6 +4,8 @@ import (
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/descriptorpb"
 )
 
 // Reserved PHP keywords that must be prefixed with something.
@@ -28,8 +30,12 @@ var reservedNames = []string{
 // ClassNamePrefix calculates class name prefix.
 //
 // Created based on https://github.com/google/protobuf/blob/67952fab2c766ac5eacc15bb78e5af4039a3d398/src/google/protobuf/compiler/php/php_generator.cc#L137
-func ClassNamePrefix(className string, file *protogen.File) string {
-	prefix := file.Proto.GetOptions().GetPhpClassPrefix()
+func ClassNamePrefix(className string, file protoreflect.FileDescriptor) string {
+	opts, ok := file.Options().(*descriptorpb.FileOptions)
+	if !ok {
+		panic("expecting *descriptorpb.FileOptions")
+	}
+	prefix := opts.GetPhpClassPrefix()
 	if prefix != "" {
 		return prefix
 	}
@@ -46,7 +52,7 @@ func ClassNamePrefix(className string, file *protogen.File) string {
 
 	if isReserved {
 		// Google internal classes receive a different prefix
-		if file.Proto.GetPackage() == "google.protobuf" {
+		if file.Package() == "google.protobuf" {
 			return "GPB"
 		}
 
@@ -60,20 +66,25 @@ func ClassNamePrefix(className string, file *protogen.File) string {
 //
 // 1. Explicitly set namespace using the "php_namespace" option
 // 2. Package name with dots replaced with backslashes and segments converted to title
-func Namespace(file *protogen.File) string {
-	if options := file.Proto.GetOptions(); options != nil {
+func Namespace(file protoreflect.FileDescriptor) string {
+	options, ok := file.Options().(*descriptorpb.FileOptions)
+	if !ok {
+		panic("expecting *descriptorpb.FileOptions")
+	}
+
+	if options != nil {
 		// When there is a namespace option defined we use it
 		if options.PhpNamespace != nil {
 			return options.GetPhpNamespace()
 		}
 	}
 
-	return Name(file.Proto.GetPackage())
+	return Name(string(file.Package()))
 }
 
 // Path guesses the path of the file based on the (internally calculated) namespace.
 func Path(file *protogen.File) string {
-	return strings.Replace(Namespace(file), "\\", "/", -1)
+	return strings.Replace(Namespace(file.Desc), "\\", "/", -1)
 }
 
 // PathFromNamespace guesses the path of the file based on the namespace.
@@ -95,7 +106,7 @@ func Name(s string) string {
 // NamespacedName calculates a fully qualified class name.
 //
 // Created based on https://github.com/google/protobuf/blob/67952fab2c766ac5eacc15bb78e5af4039a3d398/src/google/protobuf/compiler/php/php_generator.cc#L195
-func NamespacedName(className string, file *protogen.File) string {
+func NamespacedName(className string, file protoreflect.FileDescriptor) string {
 	ns := Namespace(file)
 
 	if ns == "" {
@@ -109,12 +120,12 @@ func NamespacedName(className string, file *protogen.File) string {
 func ServiceName(file *protogen.File, svc *protogen.Service) string {
 	serviceName := string(svc.Desc.Name())
 
-	return ClassNamePrefix(serviceName, file) + serviceName
+	return ClassNamePrefix(serviceName, file.Desc) + serviceName
 }
 
 // MessageName transforms a message name into a PHP compatible one.
 func MessageName(file *protogen.File, message *protogen.Message) string {
 	className := string(message.Desc.Name())
 
-	return "\\" + NamespacedName(ClassNamePrefix(className, file)+className, file)
+	return "\\" + NamespacedName(ClassNamePrefix(className, message.Desc.ParentFile())+className, message.Desc.ParentFile())
 }

@@ -4,7 +4,7 @@
 
 declare(strict_types=1);
 
-namespace {{ .File | phpNamespace }};
+namespace {{ .File.Desc | phpNamespace }};
 
 use Google\Protobuf\Internal\GPBDecodeException;
 use Http\Discovery\Psr17FactoryDiscovery;
