@@ -23,6 +23,11 @@ final class ErrorCode
     // etc.).
     const InvalidArgument = 'invalid_argument';
 
+    // Malformed indicates an error occurred while decoding the client's request.
+    // This may mean that the message was encoded improperly, or that there is a
+    // disagreement in message format between the client and server.
+    const Malformed = 'malformed';
+
     // DeadlineExceeded means operation expired before completion. For operations
     // that change the state of the system, this error may be returned even if the
     // operation has completed successfully (timeout).
@@ -112,6 +117,8 @@ final class ErrorCode
             case self::Unknown:
                 return 500; // Internal Server Error
             case self::InvalidArgument:
+                return 400; // BadRequest
+            case self::Malformed:
                 return 400; // BadRequest
             case self::DeadlineExceeded:
                 return 408; // RequestTimeout
